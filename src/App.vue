@@ -173,8 +173,11 @@ header {
 }
 
 code {
+  display: inline-block;
+  background-color: var(--nord0);
   border-left: 4px solid var(--nord7);
   padding: 10px;
+  margin: 10px 0;
 }
 
 code::before {

@@ -174,7 +174,7 @@ header {
 
 code {
   display: inline-block;
-  background-color: var(--nord0);
+  background-color: var(--color-background);
   border-left: 4px solid var(--nord7);
   padding: 10px;
   margin: 10px 0;

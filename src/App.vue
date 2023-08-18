@@ -29,7 +29,7 @@ const stores = [
 
 let path = ref(localStorage.getItem('path') || '/home/magalu/dev/luizalabs')
 let storeId = ref(localStorage.getItem('storeId') || stores[11].id)
-let project = ref(localStorage.getItem('project') || 'ff-webstore-pdp')
+let project = ref(localStorage.getItem('project') || 'pdp')
 let deployAllModules = ref(localStorage.getItem('deployAllModules') || true)
 let pullStrategy = ref(localStorage.getItem('pullStrategy') || 'USE_LOCAL')
 
@@ -51,9 +51,9 @@ const watchCode = computed(() => {
   const dist = stores.find(store => store.id == storeId.value).dist
   return `
     watch
-    -p ${pathTrim}/${projTrim}-view/dist/${dist}
+    -p ${pathTrim}/ff-webstore-${projTrim}-view/dist/${dist}
     -s ${storeId.value}
-    -m ${projTrim}
+    -m webstore-${projTrim}
   `
 })
 

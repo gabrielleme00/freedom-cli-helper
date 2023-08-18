@@ -86,17 +86,6 @@ const saveItem = e => {
         </select>
       </div>
       <div class="input-group">
-        <h3>Projects Path</h3>
-        <input id="path" v-model="path" @keyup="saveItem">
-      </div>
-    </div>
-
-    <div class="inputs">
-      <div class="input-group">
-        <h3>Project</h3>
-        <input id="project" v-model="project" @keyup="saveItem">
-      </div>
-      <div class="input-group">
         <h3>Deploy All Modules</h3>
         <select id="deployAllModules" v-model="deployAllModules" @change="saveItem">
           <option value="true">True</option>
@@ -109,6 +98,17 @@ const saveItem = e => {
           <option value="USE_LOCAL">USE_LOCAL</option>
           <option value="FORCE_PULL">FORCE_PULL</option>
         </select>
+      </div>
+    </div>
+
+    <div class="inputs">
+      <div class="input-group">
+        <h3>Projects Path</h3>
+        <input id="path" v-model="path" @keyup="saveItem">
+      </div>
+      <div class="input-group">
+        <h3>Project</h3>
+        <input id="project" v-model="project" @keyup="saveItem">
       </div>
     </div>
 

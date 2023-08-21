@@ -104,11 +104,21 @@ const saveItem = e => {
     <div class="inputs">
       <div class="input-group">
         <h3>Projects Path</h3>
-        <input id="path" v-model="path" @keyup="saveItem">
+        <input
+          id="path"
+          v-model="path"
+          @keyup="saveItem"
+          placeholder="Ex: /home/username/dev"
+        >
       </div>
       <div class="input-group">
         <h3>Project</h3>
-        <input id="project" v-model="project" @keyup="saveItem">
+        <input
+          id="project"
+          v-model="project"
+          @keyup="saveItem"
+          placeholder="Ex: pdp"
+        >
       </div>
     </div>
 

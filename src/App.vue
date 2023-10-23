@@ -1,39 +1,19 @@
 <script setup>
 import { ref, computed } from 'vue'
+import stores from './stores'
 
-const stores = [
-  { name: 'Allianz', id: 'L_ALLIANZPARQUE', dist: 'allianzparque' },
-  { name: 'Clube Netshoes', id: 'L_CLUBENETSHOES', dist: 'clubenetshoes' },
-  { name: 'ComSchool', id: 'L_COMSCHOOL', dist: 'comschool' },
-  { name: 'Estante Virtual', id: 'L_ESTANTEVIRTUAL', dist: 'estantevirtual' },
-  { name: 'Fluxo', id: 'L_FLUXO', dist: 'fluxo' },
-  { name: 'Freelace', id: 'L_FREELACE', dist: 'freelace' },
-  { name: 'Gap', id: 'L_GAP', dist: 'gapbrasil' },
-  { name: 'Kappa', id: 'L_KAPPA', dist: 'kappa' },
-  { name: 'Loja da Chape', id: 'L_CHAPECOENSE', dist: 'lojadachape' },
-  { name: 'Loja do Inter', id: 'L_INTERNACIONAL', dist: 'lojadointer' },
-  { name: 'NBA', id: 'L_NBA', dist: 'zattini' },
-  { name: 'Netshoes', id: 'L_NETSHOES', dist: 'netshoesbr' },
-  { name: 'NFL', id: 'L_NFL', dist: 'nflshop' },
-  { name: 'Rainha', id: 'L_RAINHA', dist: 'rainha' },
-  { name: 'Santos', id: 'L_SANTOS', dist: 'santosstore' },
-  { name: 'SP Mania', id: 'L_SAOPAULO', dist: 'saopaulomania' },
-  { name: 'Shoestock', id: 'L_SHOESTOCK', dist: 'shoestock' },
-  { name: 'Shop Cruzeiro', id: 'L_CRUZEIRO', dist: 'shopcruzeiro' },
-  { name: 'Shop Timão', id: 'L_CORINTHIANS', dist: 'shoptimao' },
-  { name: 'Shop Vasco', id: 'L_VASCO', dist: 'shopvasco' },
-  { name: 'Topper', id: 'L_TOPPER', dist: 'topper' },
-  { name: 'WSL', id: 'L_WSL', dist: 'wslstore' },
-  { name: 'Zattini', id: 'L_ZATTINI', dist: 'zattini' },
-]
+const getLocalStorage = (key, defaultValue) => {
+  const value = localStorage.getItem(key)
+  return value !== null ? value : defaultValue
+}
 
-let path = ref(localStorage.getItem('path') || '/home/magalu/dev/luizalabs')
-let storeId = ref(localStorage.getItem('storeId') || stores[11].id)
-let project = ref(localStorage.getItem('project') || 'pdp')
-let deployAllModules = ref(localStorage.getItem('deployAllModules') || true)
-let pullStrategy = ref(localStorage.getItem('pullStrategy') || 'USE_LOCAL')
+let path = ref(getLocalStorage('path', '/home/magalu/dev/luizalabs'))
+let storeId = ref(getLocalStorage('storeId', stores[11].id))
+let project = ref(getLocalStorage('project', 'pdp'))
+let deployAllModules = ref(getLocalStorage('deployAllModules', true))
+let pullStrategy = ref(getLocalStorage('pullStrategy', 'USE_LOCAL'))
 
-const startCode = computed(() => {
+const cliStartCommand = computed(() => {
   const dam = deployAllModules.value === 'true' ? '-dam ' : ''
   const store = storeId.value || 'L_NETSHOES'
   const ps = pullStrategy.value
@@ -45,35 +25,44 @@ const startCode = computed(() => {
   `
 })
 
-const watchCode = computed(() => {
+const cliWatchCommand = computed(() => {
   const pathTrim = (path.value || '').trim().replace(/\/+$/, '')
   const projTrim = (project.value || '').trim()
   const dist = stores.find(store => store.id == storeId.value).dist
+  const ev = storeId.value === 'L_ESTANTEVIRTUAL'
   return `
     watch
-    -p ${pathTrim}/ff-webstore-${projTrim}-view/dist/${dist}
+    -p ${pathTrim}/ff-webstore-${ev ? 'ev-' : ''}${projTrim}-view/dist/${dist}
     -s ${storeId.value}
     -m webstore-${projTrim}
   `
 })
 
+const startViewCommand = computed(() => {
+  const dist = stores.find(store => store.id == storeId.value).dist
+  return `npm run dev --store=${dist}`
+})
+
+const startBffCommand = computed(() => `npm run start:dev`)
+
 const copyText = id => {
-  let text = id == 'start' ? startCode.value : watchCode.value
-  text = text.trim().replace(/[\r\n]/gm, '').replace(/\s+/g, ' ')
+  const text = {
+    cliStartCommand: cliStartCommand,
+    cliWatchCommand: cliWatchCommand,
+    startViewCommand: startViewCommand,
+    startBffCommand: startBffCommand,
+  }[id].value.trim().replace(/[\r\n]/gm, '').replace(/\s+/g, ' ')
   navigator.clipboard.writeText(text)
 }
 
 const saveItem = e => {
   const { id, value } = e.target
   localStorage.setItem(id, value)
-  console.log(id, value)
 }
 </script>
 
 <template>
-  <header>
-    Freedom CLI Helper
-  </header>
+  <header>Freedom CLI Helper</header>
 
   <main>
     <div class="inputs">
@@ -104,34 +93,42 @@ const saveItem = e => {
     <div class="inputs">
       <div class="input-group">
         <h3>Projects Path</h3>
-        <input
-          id="path"
-          v-model="path"
-          @keyup="saveItem"
-          placeholder="Ex: /home/username/dev"
-        >
+        <input id="path" v-model="path" @keyup="saveItem" placeholder="Ex: /home/username/dev">
       </div>
       <div class="input-group">
         <h3>Project</h3>
-        <input
-          id="project"
-          v-model="project"
-          @keyup="saveItem"
-          placeholder="Ex: pdp"
-        >
+        <input id="project" v-model="project" @keyup="saveItem" placeholder="Ex: pdp">
       </div>
     </div>
 
     <div class="results">
       <div class="result-group">
         <h3>Start</h3>
-        <button @click="() => copyText('start')">&#128203;</button>
-        <code>{{ startCode }}</code>
+        <div class="code-wrapper">
+          <button @click="() => copyText('cliStartCommand')">&#128203;</button>
+          <code>{{ cliStartCommand }}</code>
+        </div>
       </div>
       <div class="result-group">
         <h3>Watch</h3>
-        <button @click="() => copyText('watch')">&#128203;</button>
-        <code> {{ watchCode }}</code>
+        <div class="code-wrapper">
+          <button @click="() => copyText('cliWatchCommand')">&#128203;</button>
+          <code>{{ cliWatchCommand }}</code>
+        </div>
+      </div>
+      <div class="result-group">
+        <h3>View</h3>
+        <div class="code-wrapper">
+          <button @click="() => copyText('startViewCommand')">&#128203;</button>
+          <code>{{ startViewCommand }}</code>
+        </div>
+      </div>
+      <div class="result-group">
+        <h3>BFF</h3>
+        <div class="code-wrapper">
+          <button @click="() => copyText('startBffCommand')">&#128203;</button>
+          <code>{{ startBffCommand }}</code>
+        </div>
       </div>
     </div>
 
@@ -180,6 +177,11 @@ header {
 .result-group button {
   margin-right: 20px;
   font-size: 24px;
+}
+
+.result-group > .code-wrapper {
+  display: flex;
+  align-items: center;
 }
 
 code {

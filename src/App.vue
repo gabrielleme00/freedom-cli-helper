@@ -2,6 +2,8 @@
 import { ref, computed } from 'vue'
 import stores from './stores'
 
+const version = APP_VERSION
+
 const getLocalStorage = (key, defaultValue) => {
   const value = localStorage.getItem(key)
   return value !== null ? value : defaultValue
@@ -62,7 +64,7 @@ const saveItem = e => {
 </script>
 
 <template>
-  <header>Freedom CLI Helper</header>
+  <header>Freedom CLI Helper v{{ version }}</header>
 
   <main>
     <div class="inputs">

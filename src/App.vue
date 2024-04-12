@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import stores from './stores'
 
 const version = APP_VERSION
+const hmgTutorialLink = 'https://magazine.atlassian.net/wiki/spaces/SCF/pages/4015063363/FREEDOM+CLI+-+USANDO+AMBIENTE+DE+HMG?version=619203d9-da5f-44d9-8ce4-bd3dd64f2269'
 
 const getLocalStorage = (key, defaultValue) => {
   const value = localStorage.getItem(key)
@@ -14,6 +15,7 @@ let storeId = ref(getLocalStorage('storeId', stores[11].id))
 let project = ref(getLocalStorage('project', 'pdp'))
 let deployAllModules = ref(getLocalStorage('deployAllModules', true))
 let pullStrategy = ref(getLocalStorage('pullStrategy', 'USE_LOCAL'))
+let remoteWatch = ref(getLocalStorage('remoteWatch', false))
 
 const cliStartCommand = computed(() => {
   const dam = deployAllModules.value === 'true' ? '-dam ' : ''
@@ -32,8 +34,9 @@ const cliWatchCommand = computed(() => {
   const projTrim = (project.value || '').trim()
   const dist = stores.find(store => store.id == storeId.value).dist
   const ev = storeId.value === 'L_ESTANTEVIRTUAL'
+  const remote = remoteWatch.value === 'true'
   return `
-    watch
+    ${remote ? 'watch-with-remote-deploy' : 'watch'}
     -p ${pathTrim}/ff-webstore-${ev ? 'ev-' : ''}${projTrim}-view/dist/${dist}
     -s ${storeId.value}
     -m webstore-${projTrim}
@@ -45,7 +48,10 @@ const startViewCommand = computed(() => {
   return `npm run dev --store=${dist}`
 })
 
-const startBffCommand = computed(() => `npm run start:dev`)
+const startBffCommand = computed(() => {
+  const remote = remoteWatch.value === 'true'
+  return remote ? '' : 'npm run start:dev'
+})
 
 const copyText = id => {
   const text = {
@@ -101,6 +107,13 @@ const saveItem = e => {
         <h3>Project</h3>
         <input id="project" v-model="project" @keyup="saveItem" placeholder="Ex: pdp">
       </div>
+      <div class="input-group">
+        <h3>Watch With Remote Deploy</h3>
+        <select id="remoteWatch" v-model="remoteWatch" @change="saveItem">
+          <option value="true">True</option>
+          <option value="false">False</option>
+        </select>
+      </div>
     </div>
 
     <div class="results">
@@ -125,13 +138,18 @@ const saveItem = e => {
           <code>{{ startViewCommand }}</code>
         </div>
       </div>
-      <div class="result-group">
+      <div v-if="startBffCommand" class="result-group">
         <h3>BFF</h3>
         <div class="code-wrapper">
           <button @click="() => copyText('startBffCommand')">&#128203;</button>
           <code>{{ startBffCommand }}</code>
         </div>
       </div>
+      <p v-else>
+        Copie a versão gerada no CLI e cole na URL de HMG do projeto como
+        <b>query param</b> (?version=VERSION_NUMBER).
+        Veja o tutorial <a :href="hmgTutorialLink">aqui</a>.
+      </p>
     </div>
 
   </main>

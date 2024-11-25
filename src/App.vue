@@ -90,7 +90,7 @@ const script = computed(() => `freedom-cli() {
 </script>
 
 <template>
-  <header>Freedom CLI Helper v{{ version }}</header>
+  <header>Freedom CLI Helper</header>
 
   <main>
     <div class="inputs">

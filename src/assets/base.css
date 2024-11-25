@@ -79,7 +79,7 @@ input:not([type="radio"]),
 select,
 textarea {
   color: var(--nord0);
-  background-color: var(--nord7);
+  background-color: var(--nord4);
   border: none;
   border-radius: 2px;
   width: 100%;

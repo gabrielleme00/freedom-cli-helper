@@ -67,6 +67,26 @@ const saveItem = e => {
   const { id, value } = e.target
   localStorage.setItem(id, value)
 }
+
+const script = computed(() => `freedom-cli() {
+  local downloaded_file_path="${path.value}/jar/webstore-frontend-helper.jar"
+
+  if [ "$1" = "update" ]; then
+    local gitlab_api_read_token="SEU_TOKEN_AQUI"
+
+    local private_token_header="PRIVATE-TOKEN: \${gitlab_api_read_token}"
+    local package_files_url="https://gitlab.luizalabs.com/api/v4/projects/15059/packages/79652/package_files"
+
+    local file_name="webstore-frontend-helper-latest.jar"
+    local file_id=$(curl -s --header $private_token_header $package_files_url | jq ".[] | select(.file_name==\"\${file_name}\") | .id")
+    local file_download_url="\${package_files_url}/\${file_id}/download"
+
+    curl --header $private_token_header $file_download_url --output $downloaded_file_path
+  else
+    java -jar $downloaded_file_path
+  fi
+}
+`)
 </script>
 
 <template>
@@ -77,7 +97,7 @@ const saveItem = e => {
       <div class="input-group">
         <h3>Store</h3>
         <select id="storeId" v-model="storeId" @change="saveItem">
-          <option v-for="store in stores" :value="store.id">
+          <option v-for="store in stores" :key="store.id" :value="store.id">
             {{ store.name }}
           </option>
         </select>
@@ -96,9 +116,6 @@ const saveItem = e => {
           <option value="FORCE_PULL">FORCE_PULL</option>
         </select>
       </div>
-    </div>
-
-    <div class="inputs">
       <div class="input-group">
         <h3>Projects Path</h3>
         <input id="path" v-model="path" @keyup="saveItem" placeholder="Ex: /home/username/dev">
@@ -116,7 +133,7 @@ const saveItem = e => {
       </div>
     </div>
 
-    <div class="results">
+    <div class="panel results">
       <div class="result-group">
         <h3>Start</h3>
         <div class="code-wrapper">
@@ -152,6 +169,19 @@ const saveItem = e => {
       </p>
     </div>
 
+    <div class="panel script">
+      <h3>Run/Update Script</h3>
+      <p>
+        Script para rodar ou atualizar o freedom-cli através do GitLab Package Registry.
+      </p>
+      <pre>{{ script }}</pre>
+      <p>
+        Substitua o valor de <code>gitlab_api_read_token</code> com o seu token de leitura da API do GitLab.
+        <br><br>
+        Pode ser adicionado ao <b>.bashrc</b> (ou <b>.zshrc</b> etc.).
+      </p>
+    </div>
+
   </main>
 </template>
 
@@ -162,9 +192,9 @@ header {
 }
 
 .inputs {
-  display: flex;
-  justify-content: space-between;
-  column-gap: 20px;
+  display: grid;
+  grid: auto / auto auto auto;
+  gap: 20px;
   margin: var(--section-gap) 0;
 }
 
@@ -175,18 +205,18 @@ header {
 }
 
 .input-group {
-  flex-grow: 1;
-  background-color: var(--color-background-soft);
+  background-color: var(--nord9);
   padding: 20px;
   border-radius: 4px;
 }
 
-.results {
+.panel {
   display: flex;
   flex-direction: column;
   row-gap: 20px;
   background-color: var(--color-background-mute);
   padding: 20px;
+  margin-bottom: 20px;
   border-radius: 4px;
 }
 
@@ -204,15 +234,22 @@ header {
   align-items: center;
 }
 
-code {
-  display: inline-block;
+code, pre {
   background-color: var(--color-background);
-  border-left: 4px solid var(--nord7);
   padding: 10px;
+}
+
+.results code {
+  display: inline-block;
+  border-left: 4px solid var(--nord9);
   margin: 10px 0;
 }
 
-code::before {
+.results code::before {
   content: '> ';
+}
+
+.script pre {
+  overflow-x: scroll;
 }
 </style>
